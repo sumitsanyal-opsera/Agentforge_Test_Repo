@@ -1,29 +1,32 @@
 @isTest
 public class POCControllerTest {
     
-    @testSetup
-    static void setupTestData() {
-        Contact c = new Contact(LastName = 'Test Contact', Email = 'test@example.com');
-        insert c;
+    @isTest
+    static void testGetPOCMessage() {
+        Test.startTest();
+        String message = POCController.getPOCMessage();
+        Test.stopTest();
+        
+        System.assertEquals('POC Controller is working!', message);
     }
     
     @isTest
-    static void testGetContacts() {
-        List<Contact> contacts = POCController.getContacts(10);
-        System.assertNotEquals(null, contacts);
+    static void testGetCurrentTimestamp() {
+        Test.startTest();
+        DateTime timestamp = POCController.getCurrentTimestamp();
+        Test.stopTest();
+        
+        System.assertNotEquals(null, timestamp);
     }
     
     @isTest
-    static void testUpdateContactEmail() {
-        Contact c = [SELECT Id FROM Contact LIMIT 1];
-        POCController.updateContactEmail(c.Id, 'newemail@example.com');
-        Contact updated = [SELECT Email FROM Contact WHERE Id = :c.Id];
-        System.assertEquals('newemail@example.com', updated.Email);
-    }
-    
-    @isTest
-    static void testGetContactCount() {
-        Integer count = POCController.getContactCount();
-        System.assertNotEquals(0, count);
+    static void testValidateString() {
+        Test.startTest();
+        Boolean result1 = POCController.validateString('test');
+        Boolean result2 = POCController.validateString('');
+        Test.stopTest();
+        
+        System.assertEquals(true, result1);
+        System.assertEquals(false, result2);
     }
 }
