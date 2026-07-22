@@ -8,7 +8,15 @@
  * - Fetch contacts by email address
  * - Update contact phone numbers
  */
-public class POCController {
+public inherited sharing class POCController {
+
+    private static Boolean isContactAccessible;
+    private static Boolean isContactUpdateable;
+
+    static {
+        isContactAccessible = Contact.sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).isAccessible();
+        isContactUpdateable = Contact.sObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).isUpdateable();
+    }
 
     /**
      * Fetches a contact record by email address
@@ -23,7 +31,7 @@ public class POCController {
         }
 
         // Check CRUD permission
-        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+        if (!isContactAccessible) {
             return null;
         }
 
@@ -52,7 +60,7 @@ public class POCController {
         }
 
         // Check CRUD permission
-        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+        if (!isContactAccessible) {
             return new List<Contact>();
         }
 
@@ -78,7 +86,7 @@ public class POCController {
         }
 
         // Check CRUD permission
-        if (!Contact.sObjectType.getDescribe().isUpdateable()) {
+        if (!isContactUpdateable) {
             return false;
         }
 
@@ -94,7 +102,7 @@ public class POCController {
             return true;
         } catch (DmlException e) {
             // Log error and return false on failure
-            System.debug('Error updating contact phone: ' + e.getMessage());
+            System.debug(LoggingLevel.ERROR, 'Error updating contact phone: ' + e.getMessage());
             return false;
         }
     }
@@ -112,7 +120,7 @@ public class POCController {
         }
 
         // Check CRUD permission
-        if (!Contact.sObjectType.getDescribe().isUpdateable()) {
+        if (!isContactUpdateable) {
             return 0;
         }
 
@@ -132,23 +140,35 @@ public class POCController {
             return contactsToUpdate.size();
         } catch (DmlException e) {
             // Log error and return 0 on failure
-            System.debug('Error during bulk update: ' + e.getMessage());
+            System.debug(LoggingLevel.ERROR, 'Error during bulk update: ' + e.getMessage());
             return 0;
         }
     }
 
+    /**
+     * Fetches contacts with a limit on the number of records returned
+     *
+     * @param limitSize The maximum number of contacts to return
+     * @return List of Contact records
+     */
     public static List<Contact> getContacts(Integer limitSize) {
         // Check CRUD permission
-        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+        if (!isContactAccessible) {
             return new List<Contact>();
         }
 
         return [SELECT Id, LastName, Email, Phone FROM Contact LIMIT :limitSize];
     }
 
+    /**
+     * Updates the email address for a contact
+     *
+     * @param contactId The Id of the contact to update
+     * @param newEmail The new email address to set
+     */
     public static void updateContactEmail(Id contactId, String newEmail) {
         // Check CRUD permission
-        if (!Contact.sObjectType.getDescribe().isUpdateable()) {
+        if (!isContactUpdateable) {
             return;
         }
 
@@ -156,12 +176,17 @@ public class POCController {
         update c;
     }
 
+    /**
+     * Gets the total count of Contact records in the org
+     *
+     * @return The number of Contact records
+     */
     public static Integer getContactCount() {
         // Check CRUD permission
-        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+        if (!isContactAccessible) {
             return 0;
         }
 
-        return [SELECT COUNT() FROM Contact];
+        return [SELECT COUNT() FROM Contact WHERE Id != null];
     }
 }
