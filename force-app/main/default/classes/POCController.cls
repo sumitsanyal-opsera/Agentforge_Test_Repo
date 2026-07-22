@@ -1,19 +1,18 @@
-
 /**
  * POCController
- * 
+ *
  * Demonstrates basic Contact SOQL operations using standard fields:
  * Id, Email, Phone, AccountId
- * 
+ *
  * Includes methods to:
  * - Fetch contacts by email address
  * - Update contact phone numbers
  */
 public class POCController {
-    
+
     /**
      * Fetches a contact record by email address
-     * 
+     *
      * @param email The email address to search for
      * @return Contact record if found, null otherwise
      */
@@ -22,7 +21,12 @@ public class POCController {
         if (email.isBlank()) {
             return null;
         }
-        
+
+        // Check CRUD permission
+        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+            return null;
+        }
+
         // Query contact using email field
         List<Contact> contacts = [
             SELECT Id, Email, Phone, AccountId
@@ -30,14 +34,14 @@ public class POCController {
             WHERE Email = :email
             LIMIT 1
         ];
-        
+
         // Return first match or null if no results
         return contacts.isEmpty() ? null : contacts[0];
     }
-    
+
     /**
      * Fetches all contacts for a specific AccountId
-     * 
+     *
      * @param accountId The Account Id to filter contacts by
      * @return List of Contact records
      */
@@ -46,7 +50,12 @@ public class POCController {
         if (accountId == null) {
             return new List<Contact>();
         }
-        
+
+        // Check CRUD permission
+        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+            return new List<Contact>();
+        }
+
         // Query contacts by AccountId
         return [
             SELECT Id, Email, Phone, AccountId
@@ -54,10 +63,10 @@ public class POCController {
             WHERE AccountId = :accountId
         ];
     }
-    
+
     /**
      * Updates the phone number for a contact
-     * 
+     *
      * @param contactId The Id of the contact to update
      * @param newPhone The new phone number to set
      * @return true if update was successful, false otherwise
@@ -67,14 +76,19 @@ public class POCController {
         if (contactId == null || newPhone.isBlank()) {
             return false;
         }
-        
+
+        // Check CRUD permission
+        if (!Contact.sObjectType.getDescribe().isUpdateable()) {
+            return false;
+        }
+
         try {
             // Create contact record with fields to update
             Contact contactToUpdate = new Contact(
                 Id = contactId,
                 Phone = newPhone
             );
-            
+
             // Perform update
             update contactToUpdate;
             return true;
@@ -84,10 +98,10 @@ public class POCController {
             return false;
         }
     }
-    
+
     /**
      * Batch updates phone numbers for multiple contacts
-     * 
+     *
      * @param contactPhoneMap Map of ContactId to new Phone number
      * @return Number of successfully updated contacts
      */
@@ -96,9 +110,14 @@ public class POCController {
         if (contactPhoneMap == null || contactPhoneMap.isEmpty()) {
             return 0;
         }
-        
+
+        // Check CRUD permission
+        if (!Contact.sObjectType.getDescribe().isUpdateable()) {
+            return 0;
+        }
+
         List<Contact> contactsToUpdate = new List<Contact>();
-        
+
         // Build list of contacts to update
         for (Id contactId : contactPhoneMap.keySet()) {
             contactsToUpdate.add(new Contact(
@@ -106,7 +125,7 @@ public class POCController {
                 Phone = contactPhoneMap.get(contactId)
             ));
         }
-        
+
         try {
             // Perform bulk update
             update contactsToUpdate;
@@ -116,18 +135,33 @@ public class POCController {
             System.debug('Error during bulk update: ' + e.getMessage());
             return 0;
         }
-public class POCController {
-    
+    }
+
     public static List<Contact> getContacts(Integer limitSize) {
+        // Check CRUD permission
+        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+            return new List<Contact>();
+        }
+
         return [SELECT Id, LastName, Email, Phone FROM Contact LIMIT :limitSize];
     }
-    
+
     public static void updateContactEmail(Id contactId, String newEmail) {
+        // Check CRUD permission
+        if (!Contact.sObjectType.getDescribe().isUpdateable()) {
+            return;
+        }
+
         Contact c = new Contact(Id = contactId, Email = newEmail);
         update c;
     }
-    
+
     public static Integer getContactCount() {
+        // Check CRUD permission
+        if (!Contact.sObjectType.getDescribe().isAccessible()) {
+            return 0;
+        }
+
         return [SELECT COUNT() FROM Contact];
     }
 }
