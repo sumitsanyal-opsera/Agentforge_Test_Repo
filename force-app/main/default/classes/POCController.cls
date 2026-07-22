@@ -102,7 +102,6 @@ public inherited sharing class POCController {
             return true;
         } catch (DmlException e) {
             // Log error and return false on failure
-            System.debug(LoggingLevel.ERROR, 'Error updating contact phone: ' + e.getMessage());
             return false;
         }
     }
@@ -140,7 +139,6 @@ public inherited sharing class POCController {
             return contactsToUpdate.size();
         } catch (DmlException e) {
             // Log error and return 0 on failure
-            System.debug(LoggingLevel.ERROR, 'Error during bulk update: ' + e.getMessage());
             return 0;
         }
     }
