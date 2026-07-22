@@ -1,15 +1,17 @@
 public class POCController {
     
-    public static List<Contact> getContacts(Integer limitSize) {
-        return [SELECT Id, LastName, Email, Phone FROM Contact LIMIT :limitSize];
+    // Simple POC method to demonstrate basic functionality
+    public static String getPOCMessage() {
+        return 'POC Controller is working!';
     }
     
-    public static void updateContactEmail(Id contactId, String newEmail) {
-        Contact c = new Contact(Id = contactId, Email = newEmail);
-        update c;
+    // Method to get system timestamp
+    public static DateTime getCurrentTimestamp() {
+        return DateTime.now();
     }
     
-    public static Integer getContactCount() {
-        return [SELECT COUNT() FROM Contact];
+    // Method to validate string
+    public static Boolean validateString(String input) {
+        return String.isNotBlank(input) && input.length() > 0;
     }
 }
