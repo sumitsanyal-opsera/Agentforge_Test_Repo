@@ -8,7 +8,6 @@ public with sharing class AccountHandler1 {
      * @param n Number of accounts to create
      */
     public static void insertAccount(Integer n) {
-        Integer counter = 0;
         Boolean isSpecialRun = true;
 
         List<Account> addAccounts = new List<Account>();
@@ -34,7 +33,7 @@ public with sharing class AccountHandler1 {
                 }
             }
         } catch (DmlException e) {
-            System.debug(LoggingLevel.ERROR, 'Error inserting accounts: ' + e.getMessage());
+            System.debug('Error inserting accounts: ' + e.getMessage());
         }
     }
 }
