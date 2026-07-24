@@ -1,7 +1,9 @@
-trigger TestTrigger on Contact (before insert) {
-    for (Contact con : Trigger.new) {
-        if (con.Description == null) {
-            con.Description = 'New Contact Created';
+public class TestTriggerHandler {
+    public static void handleBeforeInsert(List<Contact> contacts) {
+        for (Contact con : contacts) {
+            if (con.Description == null) {
+                con.Description = 'New Contact Created';
+            }
         }
     }
 }

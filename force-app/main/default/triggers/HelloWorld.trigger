@@ -1,8 +1,8 @@
-trigger HelloWorld on Lead (before update) {
-    for(Lead l:Trigger.new)
-    {
-        l.firstname='Hello';
-        l.lastname='World';
+public class HelloWorldHandler {
+    public static void handleBeforeUpdate(List<Lead> newLeads) {
+        for(Lead l : newLeads) {
+            l.FirstName = 'Hello';
+            l.LastName = 'World';
+        }
     }
-
 }
