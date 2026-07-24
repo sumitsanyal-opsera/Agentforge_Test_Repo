@@ -28,73 +28,121 @@ private class AccountServiceTest {
     @IsTest
     static void testUpdateAccountRating() {
 
-        Set<Id> accountIds = new Set<Id>();
+        User testUser = new User(
+            Alias = 'test',
+            Email = 'test@example.com',
+            EmailEncodingKey = 'UTF-8',
+            LastName = 'Test',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = [SELECT Id FROM Profile LIMIT 1].Id,
+            TimeZoneSidKey = 'America/Los_Angeles',
+            UserName = 'testuser@accountservicetest.com'
+        );
+        insert testUser;
 
-        for (Account acc : [SELECT Id FROM Account]) {
-            accountIds.add(acc.Id);
+        System.runAs(testUser) {
+            Set<Id> accountIds = new Set<Id>();
+
+            List<Account> allAccounts = [SELECT Id FROM Account];
+            for (Account acc : allAccounts) {
+                accountIds.add(acc.Id);
+            }
+
+            System.Test.startTest();
+            AccountService.updateAccountRating(accountIds);
+            System.Test.stopTest();
+
+            Map<String, Account> accountMap = new Map<String, Account>();
+
+            List<Account> updatedAccounts = [
+                SELECT Name, Rating
+                FROM Account
+            ];
+            for (Account acc : updatedAccounts) {
+                accountMap.put(acc.Name, acc);
+            }
+
+            System.assertNotEquals(null, accountMap.get('Enterprise Inc'), 'Enterprise Inc account should exist');
+            System.assertEquals('Hot', accountMap.get('Enterprise Inc').Rating, 'Enterprise Inc should have Hot rating');
+
+            System.assertNotEquals(null, accountMap.get('Mid Market Ltd'), 'Mid Market Ltd account should exist');
+            System.assertEquals('Warm', accountMap.get('Mid Market Ltd').Rating, 'Mid Market Ltd should have Warm rating');
+
+            System.assertNotEquals(null, accountMap.get('Small Business'), 'Small Business account should exist');
+            System.assertEquals('Cold', accountMap.get('Small Business').Rating, 'Small Business should have Cold rating');
+
+            System.assertNotEquals(null, accountMap.get('No Revenue'), 'No Revenue account should exist');
+            System.assertEquals('Cold', accountMap.get('No Revenue').Rating, 'No Revenue should have Cold rating');
         }
-
-        System.Test.startTest();
-        AccountService.updateAccountRating(accountIds);
-        System.Test.stopTest();
-
-        Map<String, Account> accountMap = new Map<String, Account>();
-
-        for (Account acc : [
-            SELECT Name, Rating
-            FROM Account
-        ]) {
-            accountMap.put(acc.Name, acc);
-        }
-
-        System.assertNotEquals(null, accountMap.get('Enterprise Inc'));
-        System.assertEquals('Hot', accountMap.get('Enterprise Inc').Rating);
-
-        System.assertNotEquals(null, accountMap.get('Mid Market Ltd'));
-        System.assertEquals('Warm', accountMap.get('Mid Market Ltd').Rating);
-
-        System.assertNotEquals(null, accountMap.get('Small Business'));
-        System.assertEquals('Cold', accountMap.get('Small Business').Rating);
-
-        System.assertNotEquals(null, accountMap.get('No Revenue'));
-        System.assertEquals('Cold', accountMap.get('No Revenue').Rating);
     }
 
     @IsTest
     static void testGetTotalRevenue() {
 
-        Set<Id> accountIds = new Set<Id>();
-
-        for (Account acc : [SELECT Id FROM Account]) {
-            accountIds.add(acc.Id);
-        }
-
-        System.Test.startTest();
-        Decimal totalRevenue = AccountService.getTotalRevenue(accountIds);
-        System.Test.stopTest();
-
-        System.assertEquals(
-            18000000,
-            totalRevenue,
-            'Total revenue should equal the sum of all AnnualRevenue values.'
+        User testUser = new User(
+            Alias = 'test',
+            Email = 'test@example.com',
+            EmailEncodingKey = 'UTF-8',
+            LastName = 'Test',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = [SELECT Id FROM Profile LIMIT 1].Id,
+            TimeZoneSidKey = 'America/Los_Angeles',
+            UserName = 'testuser2@accountservicetest.com'
         );
+        insert testUser;
+
+        System.runAs(testUser) {
+            Set<Id> accountIds = new Set<Id>();
+
+            List<Account> allAccounts = [SELECT Id FROM Account];
+            for (Account acc : allAccounts) {
+                accountIds.add(acc.Id);
+            }
+
+            System.Test.startTest();
+            Decimal totalRevenue = AccountService.getTotalRevenue(accountIds);
+            System.Test.stopTest();
+
+            System.assertEquals(
+                18000000,
+                totalRevenue,
+                'Total revenue should equal the sum of all AnnualRevenue values.'
+            );
+        }
     }
 
     @IsTest
     static void testEmptyInput() {
 
-        System.Test.startTest();
-
-        AccountService.updateAccountRating(new Set<Id>());
-
-        Decimal revenue = AccountService.getTotalRevenue(new Set<Id>());
-
-        System.Test.stopTest();
-
-        System.assertEquals(
-            0,
-            revenue,
-            'Revenue should be zero when no Account Ids are provided.'
+        User testUser = new User(
+            Alias = 'test',
+            Email = 'test@example.com',
+            EmailEncodingKey = 'UTF-8',
+            LastName = 'Test',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey = 'en_US',
+            ProfileId = [SELECT Id FROM Profile LIMIT 1].Id,
+            TimeZoneSidKey = 'America/Los_Angeles',
+            UserName = 'testuser3@accountservicetest.com'
         );
+        insert testUser;
+
+        System.runAs(testUser) {
+            System.Test.startTest();
+
+            AccountService.updateAccountRating(new Set<Id>());
+
+            Decimal revenue = AccountService.getTotalRevenue(new Set<Id>());
+
+            System.Test.stopTest();
+
+            System.assertEquals(
+                0,
+                revenue,
+                'Revenue should be zero when no Account Ids are provided.'
+            );
+        }
     }
 }

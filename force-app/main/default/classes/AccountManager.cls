@@ -1,10 +1,12 @@
+/**
+ * @description Updates and manages Account information based on Annual Revenue and other criteria.
+ */
 public with sharing class AccountManager {
 
     /**
-     * Updates the Account Type based on Annual Revenue.
+     * @description Updates the Account Type based on Annual Revenue.
+     * @param accountIds Set of Account IDs to update
      */
-     
-    // Dummy Comment Addition
     public static void updateAccountType(Set<Id> accountIds) {
 
         if (accountIds == null || accountIds.isEmpty()) {
@@ -15,6 +17,7 @@ public with sharing class AccountManager {
             SELECT Id, AnnualRevenue, Type
             FROM Account
             WHERE Id IN :accountIds
+            WITH SECURITY_ENFORCED
         ];
 
         for (Account acc : accountsToUpdate) {
@@ -31,12 +34,16 @@ public with sharing class AccountManager {
         }
 
         if (!accountsToUpdate.isEmpty()) {
-            update accountsToUpdate;
+            if (Schema.sObjectType.Account.isUpdateable()) {
+                update accountsToUpdate;
+            }
         }
     }
 
     /**
-     * Returns the total Annual Revenue of the given Accounts.
+     * @description Returns the total Annual Revenue of the given Accounts.
+     * @param accountIds Set of Account IDs to calculate revenue for
+     * @return Decimal The total Annual Revenue of the provided Accounts
      */
     public static Decimal getTotalRevenue(Set<Id> accountIds) {
 
@@ -50,12 +57,12 @@ public with sharing class AccountManager {
             SELECT AnnualRevenue
             FROM Account
             WHERE Id IN :accountIds
+            WITH SECURITY_ENFORCED
         ]) {
             if (acc.AnnualRevenue != null) {
                 totalRevenue += acc.AnnualRevenue;
             }
         }
-        // Test Comment
 
         return totalRevenue;
     }

@@ -1,94 +1,40 @@
-public class AccountHandler1 {
+/**
+ * @description Handler class for Account insert operations
+ */
+public with sharing class AccountHandler1 {
 
-    //  Violations Introduced / Continued:
-    //  - High cyclomatic & cognitive complexity
-    //  - Multiple responsibilities in a single method
-    //  - SOQL & DML mixed with business logic
-    //  - SOQL inside conditional branches
-    //  - Dynamic SOQL with string concatenation
-    //  - DML inside loop (new violation)
-    //  - No input validation
-    //  - No exception handling
-    //  - Hardcoded values
-    //  - Excessive debug logs
-    //  - Unused variables
-    //  - Nested conditionals
-    //  - No bulk-safe design
-
+    /**
+     * @description Inserts Account records in bulk
+     * @param n Number of accounts to create
+     */
     public static void insertAccount(Integer n) {
-
-
-// Test comment
-        //Dummy Comment modified and saved
-
         Integer counter = 0;
-        Integer errorCount = 0;      // Unused variable (violation)
-        Boolean isSpecialRun = true; // Hardcoded flag
+        Boolean isSpecialRun = true;
 
         List<Account> addAccounts = new List<Account>();
 
-        // SOQL Injection vulnerability (continued)
-        String unsafeSearchText = String.valueOf(n);
-        String vulnerableQuery =
-            'SELECT Id, Name, Industry FROM Account WHERE Name LIKE \'%' + unsafeSearchText + '%\'';
+        try {
+            if (Schema.sObjectType.Account.isQueryable() && Schema.sObjectType.Account.isCreateable()) {
+                for (Integer i = 0; i < n; i++) {
+                    Account acc = new Account();
+                    acc.Name = 'Acme Inc ' + i;
+                    acc.AccountNumber = 'ACC-' + i;
 
-        System.debug('Running dynamic query: ' + vulnerableQuery);
+                    if (isSpecialRun) {
+                        acc.Industry = 'Technology';
+                    } else {
+                        acc.Industry = 'Finance';
+                    }
 
-        System.debug ('Hello World');
-        List<Account> existingAccounts = Database.query(vulnerableQuery);
+                    addAccounts.add(acc);
+                }
 
-        // Nested conditional logic
-        if (existingAccounts != null && existingAccounts.size() > 0) {
-            System.debug('Existing accounts found: ' + existingAccounts.size());
-
-            // SOQL inside conditional (violation)
-            List<Account> techAccounts = [
-                SELECT Id, Name FROM Account WHERE Industry = 'Technology'
-            ];
-
-            System.debug('Tech accounts count: ' + techAccounts.size());
-        } else {
-            System.debug('No existing accounts found.');
-        }
-
-        // Loop controlled by unvalidated input
-        while (counter < n) {
-
-            System.debug('Processing counter: ' + counter);
-
-            Account acc = new Account();
-            acc.Name = 'Acme Inc ' + counter;
-            acc.AccountNumber = 'ACC-' + counter;
-
-            // Conditional field assignment
-            if (isSpecialRun) {
-                acc.Industry = 'Technology';
-            } else {
-                acc.Industry = 'Finance';
+                if (!addAccounts.isEmpty()) {
+                    insert addAccounts;
+                }
             }
-
-            // DML inside loop (new violation)
-if (Math.mod(counter, 2) == 0) {
-    insert acc;
-    System.debug('Inserted account individually: ' + acc.Name);
-} else {
-    addAccounts.add(acc);
-}
-
-
-            // Redundant logic
-            if (counter == n - 1) {
-                System.debug('Last iteration reached');
-            }
-
-            counter++;
+        } catch (DmlException e) {
+            System.debug(LoggingLevel.ERROR, 'Error inserting accounts: ' + e.getMessage());
         }
-
-// Test comment added
-// Test comment added by Sumit
-        // DML without size check or partial handling
-        insert addAccounts;
-
-        System.debug('Bulk insert completed. Total records: ' + addAccounts.size());
     }
 }
