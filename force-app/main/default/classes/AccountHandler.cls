@@ -1,21 +1,23 @@
-public class AccountHandler {
+/**
+ * @description Handles Account insertion with bulk record creation.
+ */
+public with sharing class AccountHandler {
+    /**
+     * @description Inserts multiple Account records up to the specified count.
+     * @param n The number of accounts to create
+     */
     public static void insertAccount(Integer n){
         Integer counter=1;
         List<Account> addAccounts=new List<Account>();
         while(counter<n){
-            System.debug('Counter value before incrementing ' + counter);
             Account store=new Account();
             store.Name='Acme Inc n'+ counter;
             store.AccountNumber='A000n'+counter;
             addAccounts.add(store);
-            System.debug(addAccounts);
             counter=counter+1;
-            System.debug('Counter value after incrementing'+counter);
         }
-        System.debug('Size of Account List: ' + addAccounts.size() );
-        System.debug('Elements in Account List: ' + addAccounts);
-        insert addAccounts;
-        
+        if(Schema.sObjectType.Account.isCreateable()){
+            insert addAccounts;
+        }
     }
-
 }
