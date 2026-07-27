@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <description>Auto-launched Record-Triggered Flow that creates a follow-up Task when a new High Priority Case is created.</description>
+    <elementSubtype>RecordTriggered</elementSubtype>
+    <interviewLabel>Case Auto Create Followup Task</interviewLabel>
+    <isTemplate>false</isTemplate>
+    <label>Case Auto Create Followup Task</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>LightningFlowBuilder</value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>AUTO_LAYOUT_ENABLED</value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>LightningFlowBuilder</value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordTriggerType>Create</recordTriggerType>
+    <startElementReference>Check_Priority_High</startElementReference>
+    <status>Active</status>
+    <triggerObject>Case</triggerObject>
+    <decisions>
+        <description>Check if Case Priority is High</description>
+        <label>Check Priority High</label>
+        <locationX>176</locationX>
+        <locationY>132</locationY>
+        <name>Check_Priority_High</name>
+        <rules>
+            <name>Priority_Is_High</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Priority</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <stringValue>High</stringValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Create_Followup_Task</targetReference>
+            </connector>
+            <label>Priority Is High</label>
+        </rules>
+    </decisions>
+    <recordCreates>
+        <description>Create a follow-up Task for High Priority Case</description>
+        <label>Create Followup Task</label>
+        <locationX>352</locationX>
+        <locationY>132</locationY>
+        <name>Create_Followup_Task</name>
+        <inputAssignments>
+            <field>ActivityDate</field>
+            <value>
+                <elementReference>Calculate_Next_Business_Day</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>$Record.OwnerId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Priority</field>
+            <value>
+                <stringValue>High</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Status</field>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Subject</field>
+            <value>
+                <stringValue>Follow-up on High Priority Case</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>WhatId</field>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Task</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordCreates>
+    <formulas>
+        <description>Calculate the next business day (skip weekends) from today</description>
+        <name>Calculate_Next_Business_Day</name>
+        <dataType>Date</dataType>
+        <expression>
+            IF(
+                MOD(VALUE(TEXT(TODAY() + 1, "u")), 7) = 6,
+                TODAY() + 3,
+                IF(
+                    MOD(VALUE(TEXT(TODAY() + 1, "u")), 7) = 0,
+                    TODAY() + 2,
+                    TODAY() + 1
+                )
+            )
+        </expression>
+    </formulas>
+</Flow>
